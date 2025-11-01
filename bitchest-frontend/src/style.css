@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+
+
+@layer base {
+  :root {
+    --text: #33a7ff;
+    --background: #ffffff;
+    --primary: #37608b;
+    --secondary: #ff5762;
+    --accent: #00ff19;
+    --paragraph: #37606b;
+    --buy-sell-bg: #a0a0a0;
+  }
+
+  html.dark,
+  .dark {
+    --text: #0074cc;
+    --text-accent-600: #00cc14;
+    --background: #000000;
+    --bg-green-100: #ccffd1;
+    --bg-green-200: #00660a;
+    --primary: #749dc8;
+    --secondary: #a8000b;
+    --accent: #00ff19;
+    --paragraph: #ffffff;
+    --buy-sell-bg: #333333;
+  }
+
+  
+
+  body {
+    background-color: var(--background);
+  }
+
+  p, h2 {
+    color: var(--paragraph);
+  }
+
+  // font-family Celias
+  @font-face {
+    font-family: 'Celias';
+    src: url('../assets/fonts/Celias.woff2') format('woff2'),
+        url('../assets/fonts/Celias.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  * {
+    font-family: 'Celias', sans-serif;
+  }
+}
