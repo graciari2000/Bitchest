@@ -48,7 +48,7 @@ const noAccount = () => {
                         </label>
                         <div class="mt-1">
                             <input v-model="email" id="email" name="email" type="email" required
-                                class="block w-full appearance-none rounded-lg border border-primary/30 px-3 py-2 placeholder-text/50 shadow-sm bg-background text-text focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                                class="block w-full appearance-none rounded-lg border border-primary/30 px-3 py-2 bg-background text-text focus:outline-none focus:ring-2 focus:ring-accent/20"
                                 placeholder="Enter your email" />
                         </div>
                     </div>
