@@ -2,50 +2,175 @@
 
 @layer base {
   :root {
+    /* Text colors */
+    --text-50: #f7fafc;
+    --text-100: #edf2f7;
+    --text-200: #e2e8f0;
+    --text-300: #cbd5e0;
+    --text-400: #a0aec0;
+    --text-500: #718096;
+    --text-600: #4a5568;
+    --text-700: #2d3748;
+    --text-800: #1a202c;
+    --text-900: #171923;
+    --text-950: #0d1117;
+
+    /* Background colors */
+    --background-50: #f7fafc;
+    --background-100: #edf2f7;
+    --background-200: #e2e8f0;
+    --background-300: #cbd5e0;
+    --background-400: #a0aec0;
+    --background-500: #718096;
+    --background-600: #4a5568;
+    --background-700: #2d3748;
+    --background-800: #1a202c;
+    --background-900: #171923;
+    --background-950: #0d1117;
+
+    /* Primary colors */
+    --primary-50: #f7fafc;
+    --primary-100: #edf2f7;
+    --primary-200: #e2e8f0;
+    --primary-300: #cbd5e0;
+    --primary-400: #a0aec0;
+    --primary-500: #37608b; /* Your main primary color */
+    --primary-600: #2d4a6f;
+    --primary-700: #1e3550;
+    --primary-800: #152436;
+    --primary-900: #0f1a27;
+    --primary-950: #090f17;
+
+    /* Secondary colors */
+    --secondary-50: #fdf2f2;
+    --secondary-100: #fde8e8;
+    --secondary-200: #fbd5d5;
+    --secondary-300: #f8b4b4;
+    --secondary-400: #f98080;
+    --secondary-500: #ff5762; /* Your main secondary color */
+    --secondary-600: #e53e3e;
+    --secondary-700: #c53030;
+    --secondary-800: #9b2c2c;
+    --secondary-900: #742a2a;
+    --secondary-950: #521b1b;
+
+    /* Accent colors - Green palette */
+    --accent-50: #f0fff4;
+    --accent-100: #c6f6d5;
+    --accent-200: #9ae6b4;
+    --accent-300: #68d391;
+    --accent-400: #48bb78;
+    --accent-500: #00ff19; /* Your main green */
+    --accent-600: #00cc14;
+    --accent-700: #00a310;
+    --accent-800: #00660a;
+    --accent-900: #004d08;
+    --accent-950: #003305;
+
+    /* Single value fallbacks (keep your existing ones) */
     --text: #37608b;
     --background: #ffffff;
     --primary: #37608b;
     --secondary: #ff5762;
     --accent: #00ff19;
     --paragraph: #37606b;
-    --buy-sell-bg: #a0a0a01a;
-    /* #33a7ff;*/
+    --secondary-500: #ff5762;
   }
 
   html.dark,
   .dark {
+    /* Dark mode - Text colors */
+    --text-50: #0d1117;
+    --text-100: #171923;
+    --text-200: #1a202c;
+    --text-300: #2d3748;
+    --text-400: #4a5568;
+    --text-500: #718096;
+    --text-600: #a0aec0;
+    --text-700: #cbd5e0;
+    --text-800: #e2e8f0;
+    --text-900: #edf2f7;
+    --text-950: #f7fafc;
+
+    /* Dark mode - Background colors */
+    --background-50: #0d1117;
+    --background-100: #171923;
+    --background-200: #1a202c;
+    --background-300: #2d3748;
+    --background-400: #4a5568;
+    --background-500: #718096;
+    --background-600: #a0aec0;
+    --background-700: #cbd5e0;
+    --background-800: #e2e8f0;
+    --background-900: #edf2f7;
+    --background-950: #f7fafc;
+
+    /* Dark mode - Primary colors */
+    --primary-50: #090f17;
+    --primary-100: #0f1a27;
+    --primary-200: #152436;
+    --primary-300: #1e3550;
+    --primary-400: #2d4a6f;
+    --primary-500: #749dc8; /* Lighter blue for dark mode */
+    --primary-600: #8ab0d6;
+    --primary-700: #a0c3e4;
+    --primary-800: #b6d6f2;
+    --primary-900: #cce9ff;
+    --primary-950: #e2f5ff;
+
+    /* Dark mode - Secondary colors */
+    --secondary-50: #521b1b;
+    --secondary-100: #742a2a;
+    --secondary-200: #9b2c2c;
+    --secondary-300: #c53030;
+    --secondary-400: #e53e3e;
+    --secondary-500: #a8000b; /* Darker red for dark mode */
+    --secondary-600: #d1000e;
+    --secondary-700: #ff0011;
+    --secondary-800: #ff3341;
+    --secondary-900: #ff6670;
+    --secondary-950: #ff999f;
+
+    /* Dark mode - Accent colors */
+    --accent-50: #003305;
+    --accent-100: #004d08;
+    --accent-200: #00660a;
+    --accent-300: #00a310;
+    --accent-400: #00cc14;
+    --accent-500: #00ff19; /* Same green for consistency */
+    --accent-600: #33ff47;
+    --accent-700: #66ff75;
+    --accent-800: #99ffa3;
+    --accent-900: #ccffd1;
+    --accent-950: #e6ffe8;
+
+    /* Single value fallbacks for dark mode */
     --text: #0074cc;
-    --text-accent-600: #00cc14;
     --background: #000000;
-    --bg-green-100: #ccffd1;
-    --bg-green-200: #00660a;
     --primary: #749dc8;
     --secondary: #a8000b;
     --accent: #00ff19;
     --paragraph: #ffffff;
-    --buy-sell-bg: #a0a0a01a;
+    --secondary-500: #a8000b;
   }
-
-  
 
   body {
     background-color: var(--background);
+    color: var(--text);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  p, h2 {
-    color: var(--paragraph);
-  }
-
-  // font-family Celias
+  /* Celias Font */
   @font-face {
     font-family: 'Celias';
     src: url('../assets/fonts/Celias.woff2') format('woff2'),
         url('../assets/fonts/Celias.woff') format('woff');
     font-weight: normal;
     font-style: normal;
+    font-display: swap;
   }
 
   * {
-    font-family: 'Celias', sans-serif;
+    font-family: 'Celias', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 }

@@ -2,6 +2,16 @@
 export default {
     darkMode: 'class',
     content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+    safelist: [
+        // Safelist all color variations that are used dynamically
+        {
+            pattern: /(bg|text|border)-(accent|secondary)-(400|500|600)/,
+        },
+        {
+            pattern: /(bg|text|border)-(primary|background|text)-(50|100|200|300|400|500|600|700|800|900|950)/,
+        }
+    ],
+
     theme: {
         extend: {
             colors: {

@@ -117,9 +117,8 @@
                                 </th>
                             </tr>
                         </thead>
-                        <tbody >
-                            <tr v-for="crypto in topCryptos" :key="crypto.symbol"
-                                class="border-b">
+                        <tbody>
+                            <tr v-for="crypto in topCryptos" :key="crypto.symbol" class="border-b">
                                 <td class="py-4 px-6">
                                     <div class="flex items-center gap-4">
                                         <div
@@ -135,16 +134,16 @@
                                 </td>
                                 <td :class="[
                                     'py-4 px-6 font-semibold',
-                                    crypto.change >= 0 ? 'text-accent' : 'secondary-500'
+                                    crypto.change >= 0 ? 'text-accent-500' : 'text-secondary-500'
                                 ]">
                                     {{ crypto.change >= 0 ? '+' : '' }}{{ crypto.change }}%
                                 </td>
-                                <td class="py-4 px-6 font-semibold text-gray-900 dark:text-white">
+                                <td class="py-4 px-6 font-semibold">
                                     ${{ crypto.price.toLocaleString() }}
                                 </td>
                                 <td class="py-4 px-6 text-right">
                                     <button
-                                        class="bg-green-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-green-600 transition-colors">
+                                        class="text-accent bg-[#] font-semibold py-2 px-6 rounded-full hover:text-accent-600 transition-colors">
                                         Trade
                                     </button>
                                 </td>
@@ -161,6 +160,13 @@
                 </div>
             </div>
         </section>
+
+        <!-- Test Section - Add this temporarily -->
+        <div class="p-4 m-4">
+            <div class="text-accent-500 bg-accent-500 p-2">Accent 500 Text & BG</div>
+            <div class="text-secondary-500 bg-secondary-500 p-2">Secondary 500 Text & BG</div>
+            <div class="text-primary-500 bg-primary-500 p-2">Primary 500 Text & BG</div>
+        </div>
 
         <!-- FAQ Section -->
         <section class="py-20">
@@ -295,6 +301,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import '../style.css'
 
 const router = useRouter()
 const isDark = ref(false)
