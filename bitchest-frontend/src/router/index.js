@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../components/HomePage.vue';
 import Login from '../components/LogIn.vue';
 import Register from '../components/Register.vue';
+import AdminDashboard from '../components/AdminDashboard.vue';
+import UserDashboard from '../components/UserDashboard.vue';
 
 // safe BASE_URL fallback for different build environments
 let BASE_URL = '/';
@@ -21,13 +23,15 @@ if (typeof process !== 'undefined' && process.env && process.env.BASE_URL) {
 const router = createRouter({
     history: createWebHistory(BASE_URL),
     routes: [
-    { path: '/', name: 'Home', component: HomePage },
-    { path: '/login', name: 'Login', component: Login },
-    { path: '/register', name: 'Register', component: Register },
+        { path: '/', name: 'Home', component: HomePage },
+        { path: '/login', name: 'Login', component: Login },
+        { path: '/register', name: 'Register', component: Register },
+        { path: '/admin/dashboard', name: 'AdminDashboard', component: AdminDashboard },
+        { path: '/dashboard', name: 'UserDashboard', component: UserDashboard },
 
-    // fallback: redirect unknown paths to home (prevents "No match found" warnings)
-    { path: '/:pathMatch(.*)*', redirect: '/' }
-]
+        // fallback: redirect unknown paths to home (prevents "No match found" warnings)
+        { path: '/:pathMatch(.*)*', redirect: '/' }
+    ]
 });
 
 export default router;

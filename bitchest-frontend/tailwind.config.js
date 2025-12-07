@@ -80,9 +80,15 @@ export default {
                     900: 'var(--accent-900)',
                     950: 'var(--accent-950)',
                 },
+                // Simple color aliases
+                text: 'var(--text)',
+                background: 'var(--background)',
+                primary: 'var(--primary)',
+                secondary: 'var(--secondary)',
+                accent: 'var(--accent)',
             },
-            buy-sell-bg: {
-                buy-sell-bg: 'var(--buy-sell-bg)',
+            backgroundColor: {
+                'buy-sell-bg': 'var(--buy-sell-bg)',
             },
         },
     },

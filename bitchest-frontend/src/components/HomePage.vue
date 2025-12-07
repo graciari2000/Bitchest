@@ -1,11 +1,10 @@
 <template>
     <div class="min-h-screen bg-background text-text">
         <!-- Navbar -->
-        <header
-            class="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+        <header class="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-[#33a7ff59]">
             <div class="container mx-auto px-6 py-4 flex justify-between items-center">
                 <h1 class="text-2xl md:text-3xl font-bold">
-                    <span class="text-accent">Bit</span><span class="text-primary dark:text-white">Chest</span>
+                    <span class="text-accent">Bit</span><span class="text-primary">Chest</span>
                 </h1>
 
                 <nav class="hidden md:flex gap-8 items-center">
@@ -17,9 +16,10 @@
 
                 <div class="flex items-center gap-4">
                     <button @click="toggleDarkMode"
-                        class="p-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-primary hover:text-background transition-colors">
-                        <span v-if="isDark">🌙</span>
-                        <span v-else>☀️</span>
+                        class="p-2 rounded-full border border-primary hover:bg-primary hover:text-background transition-colors">
+                        <!-- Replace the emoji with SVGs -->
+                        <img v-if="isDark" src="../assets/light_mode.svg" alt="Light Mode" class="w-5 h-5" />
+                        <img v-else src="../assets/dark_mode.svg" alt="Dark Mode" class="w-5 h-5" />
                     </button>
                     <button @click="goToLogin"
                         class="bg-accent text-white px-6 py-2 rounded-full hover:bg-accent/90 transition-colors font-semibold">
@@ -33,13 +33,12 @@
         <section class="pt-20 pb-16">
             <div class="container mx-auto px-6">
                 <div class="max-w-4xl mx-auto text-center">
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 dark:text-white">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-accent">
                         Secure & Intuitive<br>
-                        <span class="text-accent">Crypto Trading</span>
+                        Crypto Trading
                     </h1>
-                    <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-                        Learn how your clients, customers deploying the user for Android from their Android. Create a
-                        client with you back.
+                    <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
+                        Learn trading lorem uipsum dolor gtrghtgihtgjthujtyhbiojtidhioihjyhionjytio jho.
                     </p>
                     <div class="flex gap-4 justify-center flex-wrap">
                         <button
@@ -118,11 +117,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="crypto in topCryptos" :key="crypto.symbol" class="border-b">
+                            <tr v-for="crypto in topCryptos" :key="crypto.symbol"
+                                class="border-b border-[#33a7ff29] hover:bg-[#33a7ff0d] transition-colors">
                                 <td class="py-4 px-6">
                                     <div class="flex items-center gap-4">
                                         <div
-                                            class="w-10 h-10 from-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                                            class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
                                             {{ crypto.symbol.charAt(0) }}
                                         </div>
                                         <div>
@@ -134,7 +134,7 @@
                                 </td>
                                 <td :class="[
                                     'py-4 px-6 font-semibold',
-                                    crypto.change >= 0 ? 'text-accent-500' : 'text-secondary-500'
+                                    crypto.change >= 0 ? 'text-accent' : 'text-red-500'
                                 ]">
                                     {{ crypto.change >= 0 ? '+' : '' }}{{ crypto.change }}%
                                 </td>
@@ -142,8 +142,7 @@
                                     ${{ crypto.price.toLocaleString() }}
                                 </td>
                                 <td class="py-4 px-6 text-right">
-                                    <button
-                                        class="text-accent bg-[#] font-semibold py-2 px-6 rounded-full hover:text-accent-600 transition-colors">
+                                    <button class="text-white bg-accent font-semibold py-2 px-6 rounded-full">
                                         Trade
                                     </button>
                                 </td>
@@ -160,13 +159,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- Test Section - Add this temporarily -->
-        <div class="p-4 m-4">
-            <div class="text-accent-500 bg-accent-500 p-2">Accent 500 Text & BG</div>
-            <div class="text-secondary-500 bg-secondary-500 p-2">Secondary 500 Text & BG</div>
-            <div class="text-primary-500 bg-primary-500 p-2">Primary 500 Text & BG</div>
-        </div>
 
         <!-- FAQ Section -->
         <section class="py-20">
@@ -188,7 +180,7 @@
         </section>
 
         <!-- Footer CTA -->
-        <footer class="bg-[#38618c1a] text-white py-12">
+        <footer class="bg-[#38618c0d] px-6 py-12">
             <div class="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
                 <!-- Left Side: Text + Socials -->
                 <div>
@@ -218,26 +210,26 @@
                 <!-- Right Side: Contact Form -->
                 <form class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-[#33a7ff] mb-2">Email
+                        <label class="block text-sm font-medium mb-2 ">Email
                             Address</label>
                         <input type="email" placeholder="Enter Email Address"
-                            class="email-input w-full px-4 py-3 rounded-lg bg-[#38618c1a] border border-transparent focus:border-accent focus:ring-0" />
+                            class="email-input w-full px-4 py-3 rounded-lg bg-[#38618c1a] border border-transparent focus:border-accent focus:ring-0 placeholder:text-blue-500" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-[#33a7ff] mb-2">Your
+                        <label class="block text-sm font-medium mb-2">Your
                             Topic</label>
                         <input type="text" placeholder="Enter Your Topic"
-                            class="w-full px-4 py-3 rounded-lg bg-[#38618c1a] border border-transparent focus:border-accent focus:ring-0" />
+                            class="w-full px-4 py-3 rounded-lg bg-[#38618c1a] border border-transparent focus:border-accent focus:ring-0 placeholder:text-blue-500" />
                     </div>
                     <button type="submit"
-                        class="bg-[#00FF19] text-black font-semibold py-3 px-8 rounded-full hover:opacity-90 transition">
+                        class="bg-accent font-semibold py-3 px-8 rounded-full hover:opacity-90 transition">
                         Send Message
                     </button>
                 </form>
             </div>
 
             <!-- Divider -->
-            <div class="border-t border-gray-200 dark:border-gray-900 my-10"></div>
+            <div class="border-t border-[#33a7ff59] my-10"></div>
 
             <div class="container mx-auto px-6">
                 <div class="grid md:grid-cols-4 gap-8">
@@ -273,25 +265,11 @@
                             <li><a href="#" class="hover:text-accent transition-colors">Payment Options</a></li>
                         </ul>
                     </div>
-
-                    <!-- Download App -->
-                    <div>
-                        <h4 class="font-bold text-lg mb-4 text-accent">Download App</h4>
-                        <div class="space-y-3">
-                            <button
-                                class="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-                                <span>App Store</span>
-                            </button>
-                            <button
-                                class="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-                                <span>Google Play</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
-                <div class="border-t border-gray-700 mt-12 pt-8 text-center text-gray-400">
-                    <p>© Copyright 2024, all rights reserved by <span class="text-accent">BitChest</span></p>
+                <div class="border-t mt-12 pt-8 text-center border-[#33a7ff59]">
+                    <p class="text-[#33a7ffb3]">© Copyright 2025, all rights reserved by <span
+                            class="text-accent">BitChest</span></p>
                 </div>
             </div>
         </footer>

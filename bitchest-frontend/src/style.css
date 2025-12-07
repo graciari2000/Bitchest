@@ -34,7 +34,8 @@
     --primary-200: #e2e8f0;
     --primary-300: #cbd5e0;
     --primary-400: #a0aec0;
-    --primary-500: #37608b; /* Your main primary color */
+    --primary-500: #37608b;
+    /* Your main primary color */
     --primary-600: #2d4a6f;
     --primary-700: #1e3550;
     --primary-800: #152436;
@@ -47,7 +48,8 @@
     --secondary-200: #fbd5d5;
     --secondary-300: #f8b4b4;
     --secondary-400: #f98080;
-    --secondary-500: #ff5762; /* Your main secondary color */
+    --secondary-500: #ff5762;
+    /* Your main secondary color */
     --secondary-600: #e53e3e;
     --secondary-700: #c53030;
     --secondary-800: #9b2c2c;
@@ -60,7 +62,8 @@
     --accent-200: #9ae6b4;
     --accent-300: #68d391;
     --accent-400: #48bb78;
-    --accent-500: #00ff19; /* Your main green */
+    --accent-500: #00ff19;
+    /* Your main green */
     --accent-600: #00cc14;
     --accent-700: #00a310;
     --accent-800: #00660a;
@@ -75,6 +78,7 @@
     --accent: #00ff19;
     --paragraph: #37606b;
     --secondary-500: #ff5762;
+    --buy-sell-bg: #38618c0d;
   }
 
   html.dark,
@@ -111,7 +115,8 @@
     --primary-200: #152436;
     --primary-300: #1e3550;
     --primary-400: #2d4a6f;
-    --primary-500: #749dc8; /* Lighter blue for dark mode */
+    --primary-500: #749dc8;
+    /* Lighter blue for dark mode */
     --primary-600: #8ab0d6;
     --primary-700: #a0c3e4;
     --primary-800: #b6d6f2;
@@ -124,7 +129,8 @@
     --secondary-200: #9b2c2c;
     --secondary-300: #c53030;
     --secondary-400: #e53e3e;
-    --secondary-500: #a8000b; /* Darker red for dark mode */
+    --secondary-500: #a8000b;
+    /* Darker red for dark mode */
     --secondary-600: #d1000e;
     --secondary-700: #ff0011;
     --secondary-800: #ff3341;
@@ -137,7 +143,8 @@
     --accent-200: #00660a;
     --accent-300: #00a310;
     --accent-400: #00cc14;
-    --accent-500: #00ff19; /* Same green for consistency */
+    --accent-500: #00ff19;
+    /* Same green for consistency */
     --accent-600: #33ff47;
     --accent-700: #66ff75;
     --accent-800: #99ffa3;
@@ -152,6 +159,7 @@
     --accent: #00ff19;
     --paragraph: #ffffff;
     --secondary-500: #a8000b;
+    --buy-sell-bg: #38618c1a;
   }
 
   body {
@@ -164,7 +172,7 @@
   @font-face {
     font-family: 'Celias';
     src: url('../assets/fonts/Celias.woff2') format('woff2'),
-        url('../assets/fonts/Celias.woff') format('woff');
+      url('../assets/fonts/Celias.woff') format('woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
