@@ -1,3 +1,4 @@
+// services/api.js
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 // Get auth token from localStorage
@@ -135,7 +136,40 @@ export const authAPI = {
     }
 };
 
-// Profile API
+// User API (for settings)
+export const userAPI = {
+    updateProfile: (data) => apiRequest('/user/profile', {
+        method: 'PUT',
+        body: data,
+    }),
+
+    changePassword: (data) => apiRequest('/user/password', {
+        method: 'PUT',
+        body: data,
+    }),
+
+    toggleTwoFactor: (enabled) => apiRequest('/user/2fa', {
+        method: 'POST',
+        body: { enabled }
+    }),
+
+    updateNotificationPreferences: (preferences) => apiRequest('/user/notifications', {
+        method: 'PUT',
+        body: preferences
+    }),
+
+    getSettings: () => apiRequest('/user/settings'),
+
+    getNotificationPreferences: () => apiRequest('/user/notifications/preferences'),
+
+    deleteAccount: () => apiRequest('/user/account', {
+        method: 'DELETE'
+    }),
+
+    exportData: () => apiRequest('/user/data/export')
+};
+
+// Profile API (legacy - consider merging with userAPI)
 export const profileAPI = {
     get: () => apiRequest('/profile'),
     update: (data) => apiRequest('/profile', {
@@ -166,6 +200,8 @@ export const walletAPI = {
         method: 'POST',
         body: { amount },
     }),
+    getWalletInfo: () => apiRequest('/wallet/info'), // Add this for UserDashboard
+    getRecentTransactions: () => apiRequest('/wallet/transactions/recent'), // Add this for UserDashboard
 };
 
 // Market API
@@ -178,6 +214,11 @@ export const marketAPI = {
     getOne: (symbol) => apiRequest(`/market/${symbol}`),
     getTrending: () => apiRequest('/market/trending'),
     search: (query) => apiRequest(`/market/search?q=${query}`),
+    getTrends: () => apiRequest('/market/trends'), // Add this for UserDashboard
+    getStatistics: () => apiRequest('/market/statistics'), // Add this for AdminDashboard
+    getCryptocurrencies: () => apiRequest('/market/cryptos'), // Add this for AdminDashboard
+    getPriceHistory: (symbol, interval) => apiRequest(`/market/${symbol}/history?interval=${interval}`), // Add this for AdminDashboard
+    getNotifications: () => apiRequest('/market/notifications'), // Add this for both dashboards
 };
 
 // Transaction API
@@ -254,6 +295,40 @@ export const adminAPI = {
         return { data: data.data || data || [], meta: data.meta };
     },
     getTransactionStats: () => apiRequest('/admin/transactions/statistics'),
+
+    // System Settings (for AdminSettings)
+    getSystemSettings: () => apiRequest('/admin/settings'),
+    updateSystemSettings: (settings) => apiRequest('/admin/settings/system', {
+        method: 'PUT',
+        body: settings
+    }),
+    updateEmailSettings: (settings) => apiRequest('/admin/settings/email', {
+        method: 'PUT',
+        body: settings
+    }),
+    updateSecuritySettings: (settings) => apiRequest('/admin/settings/security', {
+        method: 'PUT',
+        body: settings
+    }),
+    updateAdminProfile: (profile) => apiRequest('/admin/profile', {
+        method: 'PUT',
+        body: profile
+    }),
+    changeAdminPassword: (data) => apiRequest('/admin/password', {
+        method: 'PUT',
+        body: data
+    }),
+    getSystemStatus: () => apiRequest('/admin/status'),
+    clearCache: () => apiRequest('/admin/cache/clear', {
+        method: 'POST'
+    }),
+    backupDatabase: () => apiRequest('/admin/database/backup'),
+    restartServer: () => apiRequest('/admin/server/restart', {
+        method: 'POST'
+    }),
+    clearLogs: () => apiRequest('/admin/logs/clear', {
+        method: 'POST'
+    })
 };
 
 // Utility functions for auth state management

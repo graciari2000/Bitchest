@@ -120,14 +120,17 @@ const handleSubmit = async () => {
     try {
         const response = await authAPI.login(email.value, password.value)
 
-        // Redirect based on user role
-        if (response.user && response.redirect_route) {
-            router.push(response.redirect_route)
-        } else if (response.user?.role === 'admin') {
+        // Stocker les informations utilisateur dans le localStorage
+        localStorage.setItem('user', JSON.stringify(response.user))
+        localStorage.setItem('token', response.token)
+
+        // Redirection basée sur le rôle
+        if (response.user.role === 'admin') {
             router.push('/admin/dashboard')
         } else {
-            router.push('/dashboard')
+            router.push('/user-dashboard')
         }
+
     } catch (error) {
         errorMessage.value = error.message || 'Login failed. Please check your credentials.'
     } finally {

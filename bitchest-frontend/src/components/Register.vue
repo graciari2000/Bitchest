@@ -177,11 +177,15 @@ const handleSubmit = async () => {
             role: userType.value
         })
 
+        // Stocker les informations utilisateur dans le localStorage
+        localStorage.setItem('user', JSON.stringify(response.user))
+        localStorage.setItem('token', response.token)
+
         // Redirect based on user role
-        if (response.user && response.user.role === 'admin') {
-            router.push('/admin/dashboard')
+        if (response.user.role === 'admin') {
+            router.push('/admin-dashboard')
         } else {
-            router.push('/dashboard')
+            router.push('/user-dashboard')
         }
     } catch (error) {
         errorMessage.value = error.message || 'Registration failed. Please try again.'

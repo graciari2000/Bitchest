@@ -62,6 +62,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/clients/{clientId}/generate-password', [AdminController::class, 'generateTempPassword']);
 
         // Admin profile
+        //admin settings
+        Route::get('/settings', [AdminController::class, 'getSettings']);
+        Route::put('/settings', [AdminController::class, 'updateSettings']);
         Route::put('/profile', [AdminController::class, 'updateProfile']);
 
         // Cryptocurrencies
