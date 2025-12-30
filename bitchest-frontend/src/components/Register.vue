@@ -16,25 +16,7 @@
                         Register
                     </h1>
 
-                    <!-- User Type Toggle -->
-                    <div class="flex gap-4 mb-10">
-                        <button type="button" @click="userType = 'admin'" :class="[
-                            'flex-1 h-14 rounded-2xl font-bold text-xs transition-all shadow-[0_8px_21px_0_rgba(0,0,0,0.16)]',
-                            userType === 'admin'
-                                ? 'bg-gradient-to-r from-[#00FF19] to-[rgba(0,255,25,0.75)] text-white'
-                                : 'border border-[#00FF19] text-black dark:text-white bg-transparent',
-                        ]">
-                            Admin
-                        </button>
-                        <button type="button" @click="userType = 'user'" :class="[
-                            'flex-1 h-14 rounded-2xl font-bold text-xs transition-all shadow-[0_8px_21px_0_rgba(0,0,0,0.16)]',
-                            userType === 'user'
-                                ? 'bg-gradient-to-r from-[#00FF19] to-[rgba(0,255,25,0.75)] text-white'
-                                : 'border border-[#00FF19] text-black dark:text-white bg-transparent',
-                        ]">
-                            User
-                        </button>
-                    </div>
+                    <!-- User registers as a regular user; admin is created via seeder -->
 
                     <form @submit.prevent="handleSubmit" class="space-y-5">
                         <!-- Name Input -->
@@ -77,7 +59,8 @@
                                         d="M6 8V7C6 3.68629 8.68629 1 12 1C15.3137 1 18 3.68629 18 7V8H20C20.5523 8 21 8.44772 21 9V21C21 21.5523 20.5523 22 20 22H4C3.44772 22 3 21.5523 3 21V9C3 8.44772 3.44772 8 4 8H6ZM19 10H5V20H19V10ZM11 15.7324C10.4022 15.3866 10 14.7403 10 14C10 12.8954 10.8954 12 12 12C13.1046 12 14 12.8954 14 14C14 14.7403 13.5978 15.3866 13 15.7324V18H11V15.7324ZM8 8H16V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V8Z"
                                         fill="#1C1C1C" />
                                 </svg>
-                                <input v-model="password" type="password" placeholder="Password" autocomplete="new-password"
+                                <input v-model="password" type="password" placeholder="Password"
+                                    autocomplete="new-password"
                                     class="bg-transparent border-none outline-none text-[#1C1C1C] text-xs flex-1 placeholder:text-[#1C1C1C]" />
                             </div>
                         </div>
@@ -92,7 +75,8 @@
                                         d="M6 8V7C6 3.68629 8.68629 1 12 1C15.3137 1 18 3.68629 18 7V8H20C20.5523 8 21 8.44772 21 9V21C21 21.5523 20.5523 22 20 22H4C3.44772 22 3 21.5523 3 21V9C3 8.44772 3.44772 8 4 8H6ZM19 10H5V20H19V10ZM11 15.7324C10.4022 15.3866 10 14.7403 10 14C10 12.8954 10.8954 12 12 12C13.1046 12 14 12.8954 14 14C14 14.7403 13.5978 15.3866 13 15.7324V18H11V15.7324ZM8 8H16V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V8Z"
                                         fill="#1C1C1C" />
                                 </svg>
-                                <input v-model="confirmPassword" type="password" placeholder="Confirm Password" autocomplete="new-password"
+                                <input v-model="confirmPassword" type="password" placeholder="Confirm Password"
+                                    autocomplete="new-password"
                                     class="bg-transparent border-none outline-none text-[#1C1C1C] text-xs flex-1 placeholder:text-[#1C1C1C]" />
                             </div>
                         </div>
@@ -157,7 +141,7 @@ const confirmPassword = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 const isDark = ref(false)
-const userType = ref('user')
+// No role selection: registrations always create regular users. Admin created via seeder.
 
 const handleSubmit = async () => {
     if (password.value !== confirmPassword.value) {
@@ -173,8 +157,7 @@ const handleSubmit = async () => {
             name: name.value,
             email: email.value,
             password: password.value,
-            password_confirmation: confirmPassword.value,
-            role: userType.value
+            password_confirmation: confirmPassword.value
         })
 
         // Stocker les informations utilisateur dans le localStorage
@@ -183,9 +166,9 @@ const handleSubmit = async () => {
 
         // Redirect based on user role
         if (response.user.role === 'admin') {
-            router.push('/admin-dashboard')
+            router.push('/admin/dashboard')
         } else {
-            router.push('/user-dashboard')
+            router.push('/dashboard')
         }
     } catch (error) {
         errorMessage.value = error.message || 'Registration failed. Please try again.'

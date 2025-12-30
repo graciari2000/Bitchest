@@ -23,7 +23,7 @@
 
                 <!-- Navigation -->
                 <nav class="px-8 space-y-8">
-                    <router-link to="/dashboard" class="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors"
+                    <router-link to="/user-dashboard" class="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors"
                         :class="isDark ? 'text-[#749DC8] hover:text-[#0074CC]' : 'text-slate-600 hover:text-[#0074CC]'">
                         <div class="w-5 h-5 rounded" :class="isDark ? 'bg-blue-900' : 'bg-blue-200'"></div>
                         <span class="text-sm font-medium">Dashboard</span>
@@ -177,59 +177,140 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="crypto in cryptocurrencyHoldings" :key="crypto.symbol"
-                                            class="border-t" :class="isDark ? 'border-[#1A2A3A]' : 'border-slate-200'">
-                                            <td class="py-4 px-6">
-                                                <div class="flex items-center gap-3">
-                                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                                                        :style="{ backgroundColor: crypto.color }">
-                                                        {{ crypto.symbol.charAt(0) }}
+                                        <template v-for="crypto in cryptocurrencyHoldings" :key="crypto.symbol">
+                                            <tr class="border-t cursor-pointer hover:opacity-90 transition-opacity"
+                                                :class="isDark ? 'border-[#1A2A3A]' : 'border-slate-200'"
+                                                @click="toggleExpand(crypto.symbol)">
+                                                <td class="py-4 px-6">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
+                                                            :style="{ backgroundColor: crypto.color }">
+                                                            {{ crypto.symbol.charAt(0) }}
+                                                        </div>
+                                                        <div>
+                                                            <div class="font-medium"
+                                                                :class="isDark ? 'text-white' : 'text-slate-900'">{{
+                                                                    crypto.name }}</div>
+                                                            <div class="text-xs"
+                                                                :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">{{
+                                                                    crypto.symbol }}</div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <div class="font-medium"
-                                                            :class="isDark ? 'text-white' : 'text-slate-900'">{{
-                                                            crypto.name }}</div>
-                                                        <div class="text-xs"
-                                                            :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">{{
-                                                            crypto.symbol }}</div>
+                                                </td>
+                                                <td class="py-4 px-6">
+                                                    <div class="font-medium"
+                                                        :class="isDark ? 'text-white' : 'text-slate-900'">{{ crypto.balance
+                                                        }}</div>
+                                                    <div class="text-xs"
+                                                        :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">{{
+                                                        formatCurrency(crypto.balance * crypto.price) }}</div>
+                                                </td>
+                                                <td class="py-4 px-6 font-medium"
+                                                    :class="isDark ? 'text-white' : 'text-slate-900'">
+                                                    {{ formatCurrency(crypto.price) }}
+                                                </td>
+                                                <td class="py-4 px-6 font-medium"
+                                                    :class="isDark ? 'text-white' : 'text-slate-900'">
+                                                    {{ formatCurrency(crypto.value) }}
+                                                </td>
+                                                <td class="py-4 px-6">
+                                                    <div
+                                                        :class="['font-medium', crypto.change24h >= 0 ? 'text-[#00FF19]' : 'text-[#A8000B]']">
+                                                        {{ crypto.change24h >= 0 ? '+' : '' }}{{ crypto.change24h.toFixed(2) }}%
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-6">
-                                                <div class="font-medium"
-                                                    :class="isDark ? 'text-white' : 'text-slate-900'">{{ crypto.balance
-                                                    }}</div>
-                                                <div class="text-xs"
-                                                    :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">{{
-                                                    formatCurrency(crypto.balance * crypto.price) }}</div>
-                                            </td>
-                                            <td class="py-4 px-6 font-medium"
-                                                :class="isDark ? 'text-white' : 'text-slate-900'">
-                                                {{ formatCurrency(crypto.price) }}
-                                            </td>
-                                            <td class="py-4 px-6 font-medium"
-                                                :class="isDark ? 'text-white' : 'text-slate-900'">
-                                                {{ formatCurrency(crypto.value) }}
-                                            </td>
-                                            <td class="py-4 px-6">
-                                                <div
-                                                    :class="['font-medium', crypto.change24h >= 0 ? 'text-[#00FF19]' : 'text-[#A8000B]']">
-                                                    {{ crypto.change24h >= 0 ? '+' : '' }}{{ crypto.change24h }}%
-                                                </div>
-                                            </td>
-                                            <td class="py-4 px-6">
-                                                <div class="flex gap-2">
-                                                    <button @click="tradeCrypto(crypto, 'buy')"
-                                                        class="px-3 py-1 text-xs rounded bg-[#00FF19] text-white hover:opacity-90 transition-opacity">
-                                                        Buy
-                                                    </button>
-                                                    <button @click="tradeCrypto(crypto, 'sell')"
-                                                        class="px-3 py-1 text-xs rounded bg-[#A8000B] text-white hover:opacity-90 transition-opacity">
-                                                        Sell
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                </td>
+                                                <td class="py-4 px-6">
+                                                    <div class="flex gap-2">
+                                                        <button @click.stop="tradeCrypto(crypto, 'buy')"
+                                                            class="px-3 py-1 text-xs rounded bg-[#00FF19] text-white hover:opacity-90 transition-opacity">
+                                                            Buy
+                                                        </button>
+                                                        <button @click.stop="tradeCrypto(crypto, 'sell')"
+                                                            class="px-3 py-1 text-xs rounded bg-[#A8000B] text-white hover:opacity-90 transition-opacity">
+                                                            Sell
+                                                        </button>
+                                                        <button @click.stop="toggleExpand(crypto.symbol)"
+                                                            class="px-3 py-1 text-xs rounded border"
+                                                            :class="isDark ? 'border-[#1A2A3A] text-[#749DC8]' : 'border-slate-300 text-slate-600'">
+                                                            {{ expandedCrypto === crypto.symbol ? '▼' : '▶' }}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- Expanded Row with Purchase History -->
+                                            <tr v-if="expandedCrypto === crypto.symbol"
+                                                class="border-t"
+                                                :class="isDark ? 'border-[#1A2A3A] bg-[#0F1A27]' : 'border-slate-200 bg-slate-50'">
+                                                <td colspan="6" class="py-4 px-6">
+                                                    <div class="space-y-4">
+                                                        <!-- Profit/Loss and Average Price -->
+                                                        <div class="grid grid-cols-3 gap-4 pb-4 border-b"
+                                                            :class="isDark ? 'border-[#1A2A3A]' : 'border-slate-200'">
+                                                            <div>
+                                                                <div class="text-xs mb-1"
+                                                                    :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">
+                                                                    Average Purchase Price</div>
+                                                                <div class="font-semibold"
+                                                                    :class="isDark ? 'text-white' : 'text-slate-900'">
+                                                                    {{ formatCurrency(crypto.averagePurchasePrice || 0) }}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div class="text-xs mb-1"
+                                                                    :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">
+                                                                    Unrealized P/L</div>
+                                                                <div class="font-semibold"
+                                                                    :class="crypto.profitLoss >= 0 ? 'text-[#00FF19]' : 'text-[#A8000B]'">
+                                                                    {{ crypto.profitLoss >= 0 ? '+' : '' }}{{ formatCurrency(crypto.profitLoss || 0) }}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div class="text-xs mb-1"
+                                                                    :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">
+                                                                    P/L Percentage</div>
+                                                                <div class="font-semibold"
+                                                                    :class="crypto.profitLossPercentage >= 0 ? 'text-[#00FF19]' : 'text-[#A8000B]'">
+                                                                    {{ crypto.profitLossPercentage >= 0 ? '+' : '' }}{{ (crypto.profitLossPercentage || 0).toFixed(2) }}%
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- Purchase History -->
+                                                        <div>
+                                                            <h4 class="text-sm font-semibold mb-3"
+                                                                :class="isDark ? 'text-white' : 'text-slate-900'">
+                                                                Purchase History</h4>
+                                                            <div v-if="crypto.purchaseHistory && crypto.purchaseHistory.length > 0"
+                                                                class="space-y-2">
+                                                                <div v-for="(purchase, idx) in crypto.purchaseHistory" :key="idx"
+                                                                    class="flex justify-between items-center p-2 rounded"
+                                                                    :class="isDark ? 'bg-[#1A2A3A]' : 'bg-white'">
+                                                                    <div>
+                                                                        <div class="text-sm font-medium"
+                                                                            :class="isDark ? 'text-white' : 'text-slate-900'">
+                                                                            {{ formatDate(purchase.date) }}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="text-right">
+                                                                        <div class="text-sm font-medium"
+                                                                            :class="isDark ? 'text-white' : 'text-slate-900'">
+                                                                            {{ purchase.quantity }} @ {{ formatCurrency(purchase.purchase_price) }}
+                                                                        </div>
+                                                                        <div class="text-xs"
+                                                                            :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">
+                                                                            Total: {{ formatCurrency(purchase.total) }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div v-else class="text-sm text-center py-4"
+                                                                :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">
+                                                                No purchase history available
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
                                     </tbody>
                                 </table>
                             </div>
@@ -331,33 +412,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { walletAPI, transactionAPI, marketAPI } from '../services/api'
 
 const router = useRouter()
 const isDark = ref(false)
 const showAddCryptoModal = ref(false)
 const selectedCrypto = ref<any>(null)
 const addAmount = ref('')
+const isLoading = ref(false)
+const expandedCrypto = ref<string | null>(null)
 
-const userName = ref('John Doe')
-const totalBalance = ref(45678.90)
-const dailyChange = ref(2.34)
-const availableEUR = ref(2500.00)
+const userName = ref('')
+const totalBalance = ref(0)
+const dailyChange = ref(0)
+const availableEUR = ref(0)
 
-const cryptocurrencyHoldings = ref([
-    { symbol: 'BTC', name: 'Bitcoin', balance: 1.5, price: 43250, value: 64875, change24h: 2.34, color: '#F7931A' },
-    { symbol: 'ETH', name: 'Ethereum', balance: 8.2, price: 2580.5, value: 21160.1, change24h: 1.87, color: '#627EEA' },
-    { symbol: 'ADA', name: 'Cardano', balance: 1500, price: 0.52, value: 780, change24h: 3.21, color: '#0033AD' },
-    { symbol: 'SOL', name: 'Solana', balance: 25, price: 98.2, value: 2455, change24h: -0.45, color: '#00FFA3' },
-])
-
-const recentTransactions = ref([
-    { id: 1, type: 'buy', symbol: 'BTC', amount: 0.1, value: 4325, fee: 21.63, date: '2024-01-15T10:30:00' },
-    { id: 2, type: 'sell', symbol: 'ETH', amount: 2, value: 5161, fee: 25.81, date: '2024-01-14T14:20:00' },
-    { id: 3, type: 'buy', symbol: 'ADA', amount: 500, value: 260, fee: 1.3, date: '2024-01-13T09:15:00' },
-    { id: 4, type: 'buy', symbol: 'SOL', amount: 10, value: 982, fee: 4.91, date: '2024-01-12T16:45:00' },
-])
+const cryptocurrencyHoldings = ref<any[]>([])
+const recentTransactions = ref<any[]>([])
+const purchaseHistory = ref<Record<string, any[]>>({})
 
 const availableCryptos = ref([
     { symbol: 'XRP', name: 'Ripple', price: 0.62 },
@@ -429,9 +503,100 @@ const getCryptoColor = (symbol: string) => {
         SOL: '#00FFA3',
         XRP: '#23292F',
         LTC: '#BFBBBB',
+        BCH: '#8DC451',
+        XEM: '#67B2E8',
+        XLM: '#14B6E7',
+        IOTA: '#293A4A',
+        DASH: '#008CE7',
         DOGE: '#C2A633',
         DOT: '#E6007A'
     }
     return colors[symbol] || '#0074CC'
 }
+
+const toggleExpand = (symbol: string) => {
+    if (expandedCrypto.value === symbol) {
+        expandedCrypto.value = null
+    } else {
+        expandedCrypto.value = symbol
+        if (!purchaseHistory.value[symbol]) {
+            loadPurchaseHistory(symbol)
+        }
+    }
+}
+
+const loadPurchaseHistory = async (symbol: string) => {
+    try {
+        const data = await walletAPI.getWallet()
+        const wallet = data.wallets?.find((w: any) => w.crypto_symbol === symbol)
+        if (wallet && wallet.purchase_history) {
+            purchaseHistory.value[symbol] = wallet.purchase_history
+        }
+    } catch (error) {
+        console.error('Error loading purchase history:', error)
+        purchaseHistory.value[symbol] = []
+    }
+}
+
+const loadWalletData = async () => {
+    isLoading.value = true
+    try {
+        // Load wallet info
+        const walletInfo = await walletAPI.getWalletInfo()
+        totalBalance.value = walletInfo.total_value || 0
+        dailyChange.value = walletInfo.daily_change || 0
+        availableEUR.value = walletInfo.available_balance || 0
+        
+        // Load wallet holdings with purchase history
+        const walletData = await walletAPI.getWallet()
+        const wallets = walletData.wallets || []
+        
+        // Get current market prices
+        const marketData = await marketAPI.getAll()
+        const cryptos = marketData.cryptos || []
+        const cryptoMap = new Map(cryptos.map((c: any) => [c.symbol, c]))
+        
+        cryptocurrencyHoldings.value = wallets.map((wallet: any) => {
+            const crypto = cryptoMap.get(wallet.crypto_symbol)
+            return {
+                symbol: wallet.crypto_symbol,
+                name: wallet.crypto_name,
+                balance: parseFloat(wallet.amount || 0),
+                price: parseFloat(crypto?.current_price || wallet.current_price || 0),
+                value: parseFloat(wallet.total_value || 0),
+                change24h: parseFloat(crypto?.price_change_percentage_24h || 0),
+                color: getCryptoColor(wallet.crypto_symbol),
+                averagePurchasePrice: parseFloat(wallet.average_purchase_price || 0),
+                profitLoss: parseFloat(wallet.profit_loss || 0),
+                profitLossPercentage: parseFloat(wallet.profit_loss_percentage || 0),
+                purchaseHistory: wallet.purchase_history || []
+            }
+        })
+        
+        // Load recent transactions
+        const transactions = await walletAPI.getRecentTransactions()
+        recentTransactions.value = transactions.map((tx: any) => ({
+            id: tx.id,
+            type: tx.type,
+            symbol: tx.symbol,
+            amount: parseFloat(tx.amount || 0),
+            value: parseFloat(tx.value || tx.total || 0),
+            fee: parseFloat(tx.fee || 0),
+            date: tx.date || tx.created_at
+        }))
+    } catch (error) {
+        console.error('Error loading wallet data:', error)
+    } finally {
+        isLoading.value = false
+    }
+}
+
+onMounted(async () => {
+    // Load user data
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    userName.value = user.name || 'User'
+    
+    // Load wallet data
+    await loadWalletData()
+})
 </script>

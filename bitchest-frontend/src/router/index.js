@@ -58,6 +58,12 @@ const router = createRouter({
             meta: { requiresAuth: true }
         },
         {
+            path: '/user-dashboard',
+            name: 'UserDashboardLegacy',
+            component: UserDashboard,
+            meta: { requiresAuth: true }
+        },
+        {
             path: '/wallet',
             name: 'Wallet',
             component: Wallet,
@@ -95,18 +101,33 @@ const router = createRouter({
 // Navigation guard pour vérifier l'authentification
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    let user = null;
+
+    try {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            user = JSON.parse(userStr);
+        }
+    } catch (e) {
+        console.error('Error parsing user from localStorage:', e);
+    }
 
     // Si la route nécessite une authentification
     if (to.meta.requiresAuth) {
         if (!token || !user) {
+            // Clear any invalid data
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
             // Rediriger vers login si non authentifié
             next('/login');
+            return;
         } else if (to.meta.requiresAdmin && user.role !== 'admin') {
-            // Rediriger vers user-dashboard si l'utilisateur n'est pas admin
+            // Rediriger vers dashboard si l'utilisateur n'est pas admin
             next('/dashboard');
+            return;
         } else {
             next();
+            return;
         }
     }
     // Si la route nécessite d'être invité (non connecté)

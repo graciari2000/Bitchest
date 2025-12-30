@@ -64,7 +64,7 @@ const drawChart = () => {
     ctx.beginPath()
 
     props.priceHistory.forEach((history, index) => {
-        const x = padding + (width - 2 * padding) * (index / (props.priceHistory.length - 1))
+        const x = padding + (width - 2 * padding) * (index / (props.priceHistory.length - 1 || 1))
         const normalizedPrice = (parseFloat(history.price) - minPrice) / priceRange
         const y = height - padding - (height - 2 * padding) * normalizedPrice
 

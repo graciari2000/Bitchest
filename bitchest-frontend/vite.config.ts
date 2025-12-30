@@ -8,4 +8,13 @@ export default defineConfig({
     vue(),
     tailwindcss(),
   ],
+  optimizeDeps: {
+    include: ['chart.js/auto'],
+    force: false, // Set to true if you continue to have cache issues
+  },
+  server: {
+    fs: {
+      strict: false,
+    },
+  },
 })

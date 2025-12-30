@@ -23,7 +23,7 @@
 
                 <!-- Navigation -->
                 <nav class="px-8 space-y-8">
-                    <router-link to="/dashboard" class="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors"
+                    <router-link to="/user-dashboard" class="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors"
                         :class="isDark ? 'text-[#749DC8] hover:text-[#0074CC]' : 'text-slate-600 hover:text-[#0074CC]'">
                         <div class="w-5 h-5 rounded" :class="isDark ? 'bg-blue-900' : 'bg-blue-200'"></div>
                         <span class="text-sm font-medium">Dashboard</span>
@@ -212,23 +212,33 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="h-64 flex items-center justify-center rounded-lg"
+                                    <div class="h-64 rounded-lg overflow-hidden"
                                         :class="isDark ? 'bg-[#1A2A3A]' : 'bg-slate-100'">
-                                        <div class="text-center">
-                                            <div class="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
-                                                :class="isDark ? 'bg-[#0F1A27]' : 'bg-white'">
-                                                <svg class="w-6 h-6"
-                                                    :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'"
-                                                    viewBox="0 0 24 24" fill="none">
-                                                    <path d="M3 3V21H21" stroke="currentColor" stroke-width="2"
-                                                        stroke-linecap="round" stroke-linejoin="round" />
-                                                    <path d="M7 16L9.5 11.5L12.5 14.5L17 8" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round"
-                                                        stroke-linejoin="round" />
-                                                </svg>
+                                        <div v-if="isLoadingChart" class="h-full flex items-center justify-center">
+                                            <div class="text-sm" :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">
+                                                Loading chart...
                                             </div>
-                                            <p class="text-sm" :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">
-                                                Trading chart for {{ selectedPair?.symbol || 'selected pair' }}</p>
+                                        </div>
+                                        <PriceChart v-else-if="selectedPair && priceHistory.length > 0"
+                                            :symbol="selectedPair.symbol"
+                                            :priceHistory="priceHistory" />
+                                        <div v-else class="h-full flex items-center justify-center">
+                                            <div class="text-center">
+                                                <div class="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
+                                                    :class="isDark ? 'bg-[#0F1A27]' : 'bg-white'">
+                                                    <svg class="w-6 h-6"
+                                                        :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'"
+                                                        viewBox="0 0 24 24" fill="none">
+                                                        <path d="M3 3V21H21" stroke="currentColor" stroke-width="2"
+                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                        <path d="M7 16L9.5 11.5L12.5 14.5L17 8" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-sm" :class="isDark ? 'text-[#749DC8]' : 'text-slate-600'">
+                                                    {{ selectedPair ? `Select a time interval to view ${selectedPair.symbol} chart` : 'Select a trading pair to view chart' }}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -511,8 +521,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { transactionAPI, walletAPI, marketAPI, priceHistoryAPI } from '../services/api'
+import PriceChart from './PriceChart.vue'
 
 const router = useRouter()
 const isDark = ref(false)
@@ -523,8 +535,12 @@ const selectedInterval = ref('1D')
 const selectedPair = ref<any>(null)
 const showConfirmationModal = ref(false)
 
-const userName = ref('John Doe')
-const availableBalance = ref(5000.00)
+const userName = ref('')
+const availableBalance = ref(0)
+const isLoading = ref(false)
+const errorMessage = ref('')
+const priceHistory = ref<any[]>([])
+const isLoadingChart = ref(false)
 
 const timeIntervals = ['1H', '4H', '1D', '1W', '1M']
 
@@ -608,10 +624,33 @@ const logout = () => {
     router.push('/login')
 }
 
-const selectTradingPair = (pair: any) => {
+const selectTradingPair = async (pair: any) => {
     selectedPair.value = pair
     price.value = pair.price.toString()
+    await loadPriceHistory(pair.symbol)
 }
+
+const loadPriceHistory = async (symbol: string) => {
+    if (!symbol) return
+    
+    isLoadingChart.value = true
+    try {
+        const data = await priceHistoryAPI.getBySymbol(symbol, '30d')
+        priceHistory.value = data.price_history || []
+    } catch (error) {
+        console.error('Error loading price history:', error)
+        priceHistory.value = []
+    } finally {
+        isLoadingChart.value = false
+    }
+}
+
+// Watch for interval changes to reload chart
+watch(selectedInterval, async () => {
+    if (selectedPair.value) {
+        await loadPriceHistory(selectedPair.value.symbol)
+    }
+})
 
 const useMaxBalance = () => {
     if (tradeType.value === 'buy' && selectedPair.value) {
@@ -626,40 +665,79 @@ const executeTrade = () => {
     }
 }
 
-const confirmTrade = () => {
-    // Here you would typically send the trade order to your backend
-    const order = {
-        id: Date.now().toString(),
-        type: tradeType.value,
-        symbol: selectedPair.value.symbol,
-        amount: parseFloat(amount.value),
-        price: parseFloat(price.value),
-        total: totalValue.value,
-        time: new Date().toISOString()
+const confirmTrade = async () => {
+    if (!selectedPair.value || !amount.value) return
+    
+    isLoading.value = true
+    errorMessage.value = ''
+    
+    try {
+        const tradeAmount = parseFloat(amount.value)
+        
+        if (tradeType.value === 'buy') {
+            // Buy cryptocurrency
+            await transactionAPI.create('buy', selectedPair.value.symbol, tradeAmount)
+        } else {
+            // Sell cryptocurrency
+            await walletAPI.sell(selectedPair.value.symbol, tradeAmount)
+        }
+        
+        // Refresh balance and data
+        await loadBalance()
+        await loadTradingPairs()
+        
+        showConfirmationModal.value = false
+        amount.value = ''
+        price.value = selectedPair.value ? selectedPair.value.price.toString() : ''
+        
+        // Show success message
+        alert(`Successfully ${tradeType.value === 'buy' ? 'bought' : 'sold'} ${tradeAmount} ${selectedPair.value.symbol}`)
+    } catch (error: any) {
+        errorMessage.value = error.message || `Failed to ${tradeType.value} cryptocurrency`
+        alert(errorMessage.value)
+    } finally {
+        isLoading.value = false
     }
+}
 
-    // Add to recent trades
-    recentTrades.value.unshift(order)
-
-    // Update available balance
-    if (tradeType.value === 'buy') {
-        availableBalance.value -= totalValue.value
-    } else {
-        availableBalance.value += totalValue.value
+const loadBalance = async () => {
+    try {
+        const data = await walletAPI.getBalance()
+        availableBalance.value = parseFloat(data.balance || 0)
+    } catch (error) {
+        console.error('Error loading balance:', error)
     }
+}
 
-    // Add to open orders if limit order
-    openOrders.value.unshift({
-        id: order.id,
-        type: order.type,
-        symbol: order.symbol,
-        amount: order.amount,
-        price: order.price
-    })
-
-    showConfirmationModal.value = false
-    amount.value = ''
-    price.value = selectedPair.value ? selectedPair.value.price.toString() : ''
+const loadTradingPairs = async () => {
+    try {
+        const data = await marketAPI.getAll()
+        const cryptos = data.cryptos || []
+        tradingPairs.value = cryptos.map((crypto: any) => ({
+            symbol: crypto.symbol,
+            name: crypto.name,
+            price: parseFloat(crypto.current_price || 0),
+            change24h: parseFloat(crypto.price_change_percentage_24h || 0),
+            high24h: parseFloat(crypto.current_price || 0) * 1.05,
+            low24h: parseFloat(crypto.current_price || 0) * 0.95,
+            volume24h: parseFloat(crypto.volume_24h || 0)
+        }))
+        
+        // If a crypto is selected from query, select it
+        const urlParams = new URLSearchParams(window.location.search)
+        const cryptoParam = urlParams.get('crypto')
+        if (cryptoParam) {
+            const found = tradingPairs.value.find(p => p.symbol === cryptoParam.toUpperCase())
+            if (found) {
+                await selectTradingPair(found)
+            }
+        } else if (tradingPairs.value.length > 0) {
+            // Load chart for first pair by default
+            await selectTradingPair(tradingPairs.value[0])
+        }
+    } catch (error) {
+        console.error('Error loading trading pairs:', error)
+    }
 }
 
 const cancelOrder = (orderId: string) => {
@@ -697,8 +775,33 @@ const formatTime = (isoString: string) => {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
-onMounted(() => {
-    // Select BTC by default
-    selectTradingPair(tradingPairs.value[0])
+onMounted(async () => {
+    // Load user data
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    userName.value = user.name || 'User'
+    
+    // Load balance and trading pairs
+    await loadBalance()
+    await loadTradingPairs()
+    
+    // Select BTC by default or from query param
+    if (tradingPairs.value.length > 0) {
+        const urlParams = new URLSearchParams(window.location.search)
+        const cryptoParam = urlParams.get('crypto')
+        const typeParam = urlParams.get('type')
+        
+        if (cryptoParam) {
+            const found = tradingPairs.value.find(p => p.symbol === cryptoParam.toUpperCase())
+            if (found) {
+                await selectTradingPair(found)
+            }
+        } else {
+            await selectTradingPair(tradingPairs.value[0])
+        }
+        
+        if (typeParam === 'sell') {
+            tradeType.value = 'sell'
+        }
+    }
 })
 </script>

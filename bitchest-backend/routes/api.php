@@ -17,6 +17,8 @@ Route::post('/login', [AuthController::class, 'login']);
 // Market data (public)
 Route::get('/market', [MarketController::class, 'index']);
 Route::get('/market/top', [MarketController::class, 'top']);
+Route::get('/market/trends', [MarketController::class, 'trends']);
+Route::get('/market/notifications', [MarketController::class, 'notifications']);
 Route::get('/market/{symbol}', [MarketController::class, 'show']);
 
 // Test route
@@ -40,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Wallet routes (client)
     Route::get('/wallet', [WalletController::class, 'index']);
     Route::get('/wallet/balance', [WalletController::class, 'balance']);
+    Route::get('/wallet/info', [WalletController::class, 'info']);
+    Route::get('/wallet/transactions/recent', [WalletController::class, 'recentTransactions']);
     Route::post('/wallet/sell', [WalletController::class, 'sell']);
 
     // Transaction routes

@@ -524,7 +524,7 @@ const notificationPreferences = ref([
 
 // Navigation
 const navItems = [
-    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Dashboard', path: '/user-dashboard' },
     { name: 'Wallet', path: '/wallet' },
     { name: 'Messages', path: '/messages' },
     { name: 'Trade', path: '/trade' },

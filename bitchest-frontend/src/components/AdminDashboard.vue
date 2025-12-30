@@ -525,7 +525,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { authAPI, marketAPI } from '../services/api'
+import { authAPI, marketAPI, adminAPI } from '../services/api'
 import Chart from 'chart.js/auto'
 
 const router = useRouter()
@@ -767,43 +767,39 @@ const fetchStatistics = async () => {
 
 const fetchCryptocurrencies = async () => {
     try {
-        const data = await marketAPI.getCryptocurrencies()
-        cryptocurrencies.value = data.map((crypto: any) => ({
-            ...crypto,
-            price: parseFloat(crypto.price),
-            change24h: parseFloat(crypto.change24h),
-            marketCap: parseFloat(crypto.market_cap),
-            volume24h: parseFloat(crypto.volume24h)
+        const response = await adminAPI.getCryptocurrencies()
+        const cryptos = response.cryptos || response.data || []
+        cryptocurrencies.value = cryptos.map((crypto: any) => ({
+            symbol: crypto.symbol,
+            name: crypto.name,
+            price: parseFloat(crypto.current_price || crypto.price || 0),
+            change24h: parseFloat(crypto.price_change_percentage_24h || crypto.change24h || 0),
+            marketCap: parseFloat(crypto.market_cap || 0),
+            volume24h: parseFloat(crypto.volume_24h || crypto.volume24h || 0)
         }))
     } catch (error) {
         console.error('Error fetching cryptocurrencies:', error)
-        // Fallback data
-        cryptocurrencies.value = [
-            { symbol: 'BTC', name: 'Bitcoin', price: 43250.00, change24h: 2.34, marketCap: 850000000000, volume24h: 28345000000 },
-            { symbol: 'ETH', name: 'Ethereum', price: 2580.50, change24h: 1.87, marketCap: 310000000000, volume24h: 14230000000 },
-            { symbol: 'ADA', name: 'Cardano', price: 0.52, change24h: 3.21, marketCap: 18500000000, volume24h: 420000000 },
-            { symbol: 'SOL', name: 'Solana', price: 98.20, change24h: -0.45, marketCap: 42000000000, volume24h: 2800000000 },
-            { symbol: 'XRP', name: 'Ripple', price: 0.62, change24h: 0.82, marketCap: 34000000000, volume24h: 1800000000 }
-        ]
+        // Keep empty array on error instead of mock data
+        cryptocurrencies.value = []
     }
 }
 
 const fetchRecentActivity = async () => {
     try {
-        const data = await marketAPI.getRecentTransactions()
-        recentActivity.value = data.map((activity: any) => ({
-            ...activity,
-            timestamp: activity.created_at || activity.timestamp
+        const response = await adminAPI.getTransactions(1, 10)
+        const transactions = response.data || []
+        recentActivity.value = transactions.map((transaction: any) => ({
+            id: transaction.id,
+            type: transaction.type,
+            description: `${transaction.type === 'buy' ? 'Bought' : 'Sold'} ${transaction.amount} ${transaction.crypto_symbol}`,
+            userName: transaction.user?.name || 'Unknown User',
+            amount: transaction.type === 'buy' ? transaction.total : -transaction.total,
+            timestamp: transaction.created_at || transaction.purchase_date
         }))
     } catch (error) {
         console.error('Error fetching recent activity:', error)
-        // Fallback data
-        recentActivity.value = [
-            { id: 1, type: 'buy', description: 'Large BTC purchase', userName: 'John Doe', amount: 43250, timestamp: new Date(Date.now() - 1800000).toISOString() },
-            { id: 2, type: 'sell', description: 'ETH sale', userName: 'Jane Smith', amount: -5161, timestamp: new Date(Date.now() - 3600000).toISOString() },
-            { id: 3, type: 'registration', description: 'New user registered', userName: 'New User', timestamp: new Date(Date.now() - 7200000).toISOString() },
-            { id: 4, type: 'deposit', description: 'EUR deposit', userName: 'Mike Johnson', amount: 5000, timestamp: new Date(Date.now() - 10800000).toISOString() }
-        ]
+        // Keep empty array on error instead of mock data
+        recentActivity.value = []
     }
 }
 
@@ -813,13 +809,8 @@ const fetchNotifications = async () => {
         notifications.value = data
     } catch (error) {
         console.error('Error fetching notifications:', error)
-        // Fallback data
-        notifications.value = [
-            { id: 1, type: 'transaction', title: 'Large Transaction', message: 'User John Doe made a large BTC purchase', amount: 43250, read: false, created_at: new Date(Date.now() - 3600000).toISOString() },
-            { id: 2, type: 'message', title: 'New Support Ticket', message: 'User Jane Smith opened a support ticket', read: false, created_at: new Date(Date.now() - 7200000).toISOString() },
-            { id: 3, type: 'alert', title: 'System Alert', message: 'High server load detected', read: true, created_at: new Date(Date.now() - 10800000).toISOString() },
-            { id: 4, type: 'info', title: 'Maintenance Notice', message: 'Scheduled maintenance in 2 hours', read: true, created_at: new Date(Date.now() - 14400000).toISOString() }
-        ]
+        // Keep empty array on error instead of mock data
+        notifications.value = []
     }
 }
 

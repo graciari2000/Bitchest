@@ -120,18 +120,50 @@ const handleSubmit = async () => {
     try {
         const response = await authAPI.login(email.value, password.value)
 
+        // Verify we got a token
+        if (!response.token) {
+            throw new Error('No token received from server')
+        }
+
         // Stocker les informations utilisateur dans le localStorage
         localStorage.setItem('user', JSON.stringify(response.user))
         localStorage.setItem('token', response.token)
 
-        // Redirection basée sur le rôle
-        if (response.user.role === 'admin') {
-            router.push('/admin/dashboard')
-        } else {
-            router.push('/user-dashboard')
+        // Debug logging
+        console.log('Login successful:', {
+            hasToken: !!response.token,
+            tokenLength: response.token.length,
+            userRole: response.user.role,
+            userId: response.user.id
+        })
+
+        // Small delay to ensure localStorage is written
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        // Verify token is accepted by the backend before redirecting.
+        try {
+            const me = await authAPI.me()
+            // Update stored user with authoritative data from /me
+            localStorage.setItem('user', JSON.stringify(me.user || me))
+
+            // Redirect based on role returned by /me (or original response)
+            const role = (me.user && me.user.role) || response.user.role
+            if (role === 'admin') {
+                router.push('/admin/dashboard')
+            } else {
+                router.push('/dashboard')
+            }
+        } catch (err) {
+            console.error('Post-login verification failed:', err)
+            // Don't redirect; present error to the user
+            errorMessage.value = 'Login succeeded but session verification failed. Please try again.'
+            // Clear token to avoid immediate redirect from route guards
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
         }
 
     } catch (error) {
+        console.error('Login error:', error)
         errorMessage.value = error.message || 'Login failed. Please check your credentials.'
     } finally {
         isLoading.value = false

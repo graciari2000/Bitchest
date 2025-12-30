@@ -18,23 +18,41 @@ class AuthController extends Controller
                 'password' => 'required|string|min:8',
                 'phone' => 'nullable|string',
                 'address' => 'nullable|string',
+                'role' => 'nullable|string|in:admin,user', // Accept role from request
             ]);
 
-            // Generate API token
-            $apiToken = Str::random(60);
-            
+            // Determine role: use provided role or default to 'user'
+            $role = $validated['role'] ?? 'user';
+            // Only allow 'admin' or 'user' roles
+            if (!in_array($role, ['admin', 'user'])) {
+                $role = 'user';
+            }
+
+            // Enforce single-admin rule: only allow creating an admin if none exists yet.
+            // If an admin already exists, force the role to 'user' regardless of request.
+            if ($role === 'admin') {
+                $adminExists = User::where('role', 'admin')->exists();
+                if ($adminExists) {
+                    // Log for auditing and silently downgrade to 'user'
+                    \Log::warning('Attempt to create additional admin during registration for email: ' . ($validated['email'] ?? 'unknown'));
+                    $role = 'user';
+                }
+            }
+
             // Create user with default values
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
-                'api_token' => hash('sha256', $apiToken),
-                'role' => 'client', // Default role
-                'balance' => 10000.00, // Default starting balance
+                'role' => $role,
+                'balance' => 500.00, // Auto-credit €500 during prototyping phase
                 'is_active' => true,
                 'phone' => $validated['phone'] ?? null,
                 'address' => $validated['address'] ?? null,
             ]);
+
+            // Create Sanctum token
+            $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
                 'message' => 'User registered successfully',
@@ -46,15 +64,13 @@ class AuthController extends Controller
                     'balance' => $user->balance,
                     'is_active' => $user->is_active,
                 ],
-                'token' => $apiToken
+                'token' => $token
             ], 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
-            
         } catch (\Exception $e) {
             \Log::error('Registration error: ' . $e->getMessage());
             return response()->json([
@@ -92,10 +108,9 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            // Generate new token
-            $apiToken = Str::random(60);
-            $user->api_token = hash('sha256', $apiToken);
-            $user->save();
+            // Revoke all existing tokens and create new one (MongoDB-compatible)
+            $user->deleteTokens();
+            $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login successful',
@@ -107,9 +122,8 @@ class AuthController extends Controller
                     'balance' => $user->balance,
                     'is_active' => $user->is_active,
                 ],
-                'token' => $apiToken
+                'token' => $token
             ]);
-            
         } catch (\Exception $e) {
             \Log::error('Login error: ' . $e->getMessage());
             return response()->json([
@@ -123,9 +137,9 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
-            $user->api_token = null;
-            $user->save();
-            
+            // Revoke the current token
+            $request->user()->currentAccessToken()?->delete();
+
             return response()->json(['message' => 'Logged out successfully']);
         } catch (\Exception $e) {
             \Log::error('Logout error: ' . $e->getMessage());

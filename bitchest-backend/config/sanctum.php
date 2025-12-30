@@ -32,7 +32,10 @@ return [
     |
     */
 
-    'guard' => ['web'],
+    // Include both 'web' and 'api' guards so Sanctum will check them
+    // before falling back to bearer token authentication. This helps
+    // when API requests are authenticated via the 'api' guard.
+    'guard' => ['web', 'api'],
 
     /*
     |--------------------------------------------------------------------------
@@ -80,4 +83,3 @@ return [
     ],
 
 ];
-

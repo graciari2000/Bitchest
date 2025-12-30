@@ -53,6 +53,78 @@ class MarketController extends Controller
     }
 
     /**
+     * Get market trends (top cryptocurrencies with price changes)
+     */
+    public function trends(Request $request)
+    {
+        $limit = $request->get('limit', 10);
+        $cryptos = Crypto::orderBy('market_cap', 'desc')
+            ->limit($limit)
+            ->get();
+
+        $trends = $cryptos->map(function ($crypto) {
+            return [
+                'symbol' => $crypto->symbol,
+                'name' => $crypto->name,
+                'price' => (float) $crypto->current_price,
+                'change' => (float) ($crypto->price_change_percentage_24h ?? 0),
+            ];
+        });
+
+        return response()->json($trends);
+    }
+
+    /**
+     * Get market notifications (price alerts and market updates)
+     */
+    public function notifications(Request $request)
+    {
+        // Get cryptocurrencies with significant price changes (>= 5%)
+        $significantChanges = Crypto::whereNotNull('price_change_percentage_24h')
+            ->where(function ($query) {
+                $query->where('price_change_percentage_24h', '>=', 5)
+                      ->orWhere('price_change_percentage_24h', '<=', -5);
+            })
+            ->orderBy('market_cap', 'desc')
+            ->limit(5)
+            ->get();
+
+        $notifications = collect();
+
+        // Create price alert notifications for significant changes
+        foreach ($significantChanges as $crypto) {
+            $change = (float) ($crypto->price_change_percentage_24h ?? 0);
+            $isPositive = $change > 0;
+            
+            $notifications->push([
+                'id' => uniqid('notif_'),
+                'type' => 'info',
+                'title' => 'Price Alert',
+                'message' => $crypto->symbol . ' is ' . ($isPositive ? 'up' : 'down') . ' ' . abs($change) . '% today',
+                'amount' => (float) $crypto->current_price,
+                'read' => false,
+                'created_at' => now()->toISOString(),
+            ]);
+        }
+
+        // If no significant changes, return empty array or default notifications
+        if ($notifications->isEmpty()) {
+            $notifications = collect([
+                [
+                    'id' => uniqid('notif_'),
+                    'type' => 'info',
+                    'title' => 'Market Update',
+                    'message' => 'Market is stable today',
+                    'read' => false,
+                    'created_at' => now()->toISOString(),
+                ],
+            ]);
+        }
+
+        return response()->json($notifications->values()->all());
+    }
+
+    /**
      * Update cryptocurrency prices (for admin or scheduled job)
      */
     public function updatePrices(Request $request)

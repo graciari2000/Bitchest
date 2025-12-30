@@ -21,7 +21,7 @@ class AdminController extends Controller
             return response()->json(['message' => 'Unauthorized. Admin access required.'], 403);
         }
 
-        $clients = User::where('role', 'client')->paginate(20);
+        $clients = User::where('role', 'user')->paginate(20);
 
         return response()->json($clients);
     }
@@ -63,7 +63,7 @@ class AdminController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($tempPassword),
-            'role' => 'client',
+            'role' => 'user',
             'balance' => 500.00, // Auto-credit €500 during prototyping
             'is_active' => true,
             'phone' => $request->phone,
@@ -88,8 +88,8 @@ class AdminController extends Controller
 
         $client = User::findOrFail($clientId);
 
-        if ($client->role !== 'client') {
-            return response()->json(['message' => 'User is not a client.'], 400);
+        if ($client->role !== 'user') {
+            return response()->json(['message' => 'User is not a regular user.'], 400);
         }
 
         $request->validate([
@@ -120,8 +120,8 @@ class AdminController extends Controller
 
         $client = User::findOrFail($clientId);
 
-        if ($client->role !== 'client') {
-            return response()->json(['message' => 'User is not a client.'], 400);
+        if ($client->role !== 'user') {
+            return response()->json(['message' => 'User is not a regular user.'], 400);
         }
 
         // Delete related data
@@ -146,8 +146,8 @@ class AdminController extends Controller
 
         $client = User::findOrFail($clientId);
 
-        if ($client->role !== 'client') {
-            return response()->json(['message' => 'User is not a client.'], 400);
+        if ($client->role !== 'user') {
+            return response()->json(['message' => 'User is not a regular user.'], 400);
         }
 
         $tempPassword = Str::random(12);
@@ -207,10 +207,10 @@ class AdminController extends Controller
             return response()->json(['message' => 'Unauthorized. Admin access required.'], 403);
         }
 
-        $totalClients = User::where('role', 'client')->count();
-        $activeClients = User::where('role', 'client')->where('is_active', true)->count();
+        $totalClients = User::where('role', 'user')->count();
+        $activeClients = User::where('role', 'user')->where('is_active', true)->count();
         $totalTransactions = Transaction::count();
-        $totalBalance = User::where('role', 'client')->sum('balance');
+        $totalBalance = User::where('role', 'user')->sum('balance');
         $totalWallets = Wallet::count();
 
         return response()->json([

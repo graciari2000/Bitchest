@@ -40,6 +40,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        // Add an 'api' guard so Sanctum can check it if configured.
+        // Using the session driver keeps behavior consistent with 'web' for first-party SPA.
+        'api' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
     ],
 
     /*

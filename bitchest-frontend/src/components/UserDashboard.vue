@@ -526,7 +526,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { adminAPI, marketAPI, authAPI } from '../services/api'
+import { adminAPI, marketAPI, authAPI, walletAPI } from '../services/api'
 import Chart from 'chart.js/auto'
 
 const router = useRouter()
@@ -575,7 +575,7 @@ const topAsset = computed(() => {
 const currentPath = computed(() => route.path)
 
 const navItems = [
-  { name: 'Dashboard', path: '/dashboard' },
+  { name: 'Dashboard', path: '/user-dashboard' },
   { name: 'Wallet', path: '/wallet' },
   { name: 'Messages', path: '/messages' },
   { name: 'Trade', path: '/trade' },
@@ -666,7 +666,8 @@ const handleNotificationClick = (notification: any) => {
 const fetchData = async () => {
   loading.value = true
   try {
-    await Promise.all([
+    // Use Promise.allSettled to prevent one failure from stopping all requests
+    await Promise.allSettled([
       fetchPortfolioData(),
       fetchMarketTrends(),
       fetchRecentTransactions(),
@@ -679,6 +680,7 @@ const fetchData = async () => {
     initializeChart()
   } catch (error) {
     console.error('Error fetching data:', error)
+    // Don't redirect on error - just log it
   } finally {
     loading.value = false
   }
@@ -698,15 +700,11 @@ const fetchPortfolioData = async () => {
     }))
   } catch (error) {
     console.error('Error fetching portfolio data:', error)
-    // Fallback data
-    portfolioValue.value = 45678.90
-    portfolioChange.value = 2.34
-    availableBalance.value = 2500.00
-    holdings.value = [
-      { symbol: 'BTC', name: 'Bitcoin', amount: 1.5, value: 64875, change: 2.34 },
-      { symbol: 'ETH', name: 'Ethereum', amount: 8.2, value: 21160.1, change: 1.87 },
-      { symbol: 'ADA', name: 'Cardano', amount: 1500, value: 780, change: 3.21 }
-    ]
+    // Keep default values on error instead of mock data
+    portfolioValue.value = 0
+    portfolioChange.value = 0
+    availableBalance.value = 0
+    holdings.value = []
   }
 }
 
@@ -720,32 +718,23 @@ const fetchMarketTrends = async () => {
     }))
   } catch (error) {
     console.error('Error fetching market trends:', error)
-    // Fallback data
-    marketTrends.value = [
-      { symbol: 'BTC', name: 'Bitcoin', price: 43250.00, change: 2.34 },
-      { symbol: 'ETH', name: 'Ethereum', price: 2580.50, change: 1.87 },
-      { symbol: 'SOL', name: 'Solana', price: 98.20, change: -0.45 },
-      { symbol: 'ADA', name: 'Cardano', price: 0.52, change: 3.21 }
-    ]
+    // Keep empty array on error instead of mock data
+    marketTrends.value = []
   }
 }
 
 const fetchRecentTransactions = async () => {
   try {
-    const data = await marketAPI.getRecentTransactions()
+    const data = await walletAPI.getRecentTransactions()
     recentTransactions.value = data.map((transaction: any) => ({
       ...transaction,
-      value: parseFloat(transaction.value),
-      fee: parseFloat(transaction.fee)
+      value: parseFloat(transaction.value || transaction.total || 0),
+      fee: parseFloat(transaction.fee || 0)
     }))
   } catch (error) {
     console.error('Error fetching recent transactions:', error)
-    // Fallback data
-    recentTransactions.value = [
-      { id: 1, type: 'buy', symbol: 'BTC', amount: 0.1, value: 4325, fee: 21.63, date: new Date(Date.now() - 1800000).toISOString() },
-      { id: 2, type: 'sell', symbol: 'ETH', amount: 2, value: 5161, fee: 25.81, date: new Date(Date.now() - 3600000).toISOString() },
-      { id: 3, type: 'buy', symbol: 'ADA', amount: 500, value: 260, fee: 1.3, date: new Date(Date.now() - 7200000).toISOString() }
-    ]
+    // Keep empty array on error instead of mock data
+    recentTransactions.value = []
   }
 }
 
@@ -755,12 +744,8 @@ const fetchNotifications = async () => {
     notifications.value = data
   } catch (error) {
     console.error('Error fetching notifications:', error)
-    // Fallback data
-    notifications.value = [
-      { id: 1, type: 'transaction', title: 'Transaction Complete', message: 'Your BTC purchase was successful', amount: 4325, read: false, created_at: new Date(Date.now() - 1800000).toISOString() },
-      { id: 2, type: 'info', title: 'Price Alert', message: 'BTC is up 5% today', read: false, created_at: new Date(Date.now() - 7200000).toISOString() },
-      { id: 3, type: 'message', title: 'New Message', message: 'You have a new support message', read: true, created_at: new Date(Date.now() - 10800000).toISOString() }
-    ]
+    // Keep empty array on error instead of mock data
+    notifications.value = []
   }
 }
 

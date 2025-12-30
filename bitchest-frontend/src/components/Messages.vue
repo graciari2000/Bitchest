@@ -23,7 +23,7 @@
 
                 <!-- Navigation -->
                 <nav class="px-8 space-y-8">
-                    <router-link to="/dashboard" class="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors"
+                    <router-link to="/user-dashboard" class="flex items-center gap-4 px-4 py-3 rounded-lg transition-colors"
                         :class="isDark ? 'text-[#749DC8] hover:text-[#0074CC]' : 'text-slate-600 hover:text-[#0074CC]'">
                         <div class="w-5 h-5 rounded" :class="isDark ? 'bg-blue-900' : 'bg-blue-200'"></div>
                         <span class="text-sm font-medium">Dashboard</span>

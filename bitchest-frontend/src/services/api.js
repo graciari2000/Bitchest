@@ -3,16 +3,20 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 
 // Get auth token from localStorage
 function getAuthToken() {
-    return localStorage.getItem('auth_token');
+    // Check both 'token' and 'auth_token' for compatibility
+    return localStorage.getItem('token') || localStorage.getItem('auth_token');
 }
 
 // Set auth token in localStorage
 function setAuthToken(token) {
+    // Store in both keys for compatibility
+    localStorage.setItem('token', token);
     localStorage.setItem('auth_token', token);
 }
 
 // Remove auth token
 function removeAuthToken() {
+    localStorage.removeItem('token');
     localStorage.removeItem('auth_token');
 }
 
@@ -29,6 +33,14 @@ async function apiRequest(endpoint, options = {}) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
+    // Debug logging (remove in production)
+    if (import.meta.env.DEV) {
+        console.log(`[API] ${options.method || 'GET'} ${endpoint}`, {
+            hasToken: !!token,
+            tokenLength: token ? token.length : 0
+        });
+    }
+
     const config = {
         ...options,
         headers,
@@ -43,8 +55,56 @@ async function apiRequest(endpoint, options = {}) {
 
         // Handle unauthorized (401) responses
         if (response.status === 401) {
-            removeAuthToken();
-            window.location.href = '/login';
+            // Get error details for debugging
+            let errorDetails = '';
+            try {
+                const errorData = await response.clone().json();
+                errorDetails = errorData.message || errorData.error || JSON.stringify(errorData);
+            } catch {
+                errorDetails = await response.clone().text();
+            }
+
+            if (import.meta.env.DEV) {
+                console.error(`[API] 401 Unauthorized on ${endpoint}`, {
+                    error: errorDetails,
+                    hasToken: !!token
+                });
+            }
+            const currentPath = window.location.pathname;
+            const isPublicPage = currentPath === '/' || currentPath === '/login' || currentPath === '/register';
+
+            // Debug logging
+            if (import.meta.env.DEV) {
+                console.error(`[API] 401 Unauthorized on ${endpoint}`, {
+                    currentPath,
+                    isPublicPage,
+                    hasToken: !!token,
+                    tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+                });
+            }
+
+            // Only clear auth and redirect if we're on a protected route
+            // Don't redirect if we're already on a public page (prevents loops)
+            if (!isPublicPage) {
+                // Clear auth data
+                removeAuthToken();
+                localStorage.removeItem('user');
+
+                // Use setTimeout to prevent immediate redirect loops
+                // This gives the router a chance to handle the navigation
+                setTimeout(() => {
+                    const stillOnProtectedRoute = window.location.pathname.startsWith('/dashboard') ||
+                        window.location.pathname.startsWith('/admin') ||
+                        window.location.pathname.startsWith('/wallet') ||
+                        window.location.pathname.startsWith('/trade') ||
+                        window.location.pathname.startsWith('/messages') ||
+                        window.location.pathname.startsWith('/settings');
+                    if (stillOnProtectedRoute) {
+                        window.location.href = '/login';
+                    }
+                }, 100);
+            }
+
             throw new Error('Session expired. Please login again.');
         }
 
@@ -118,7 +178,7 @@ export const authAPI = {
     },
 
     me: async () => {
-        return await apiRequest('/user');
+        return await apiRequest('/me');
     },
 
     forgotPassword: async (email) => {
@@ -219,6 +279,7 @@ export const marketAPI = {
     getCryptocurrencies: () => apiRequest('/market/cryptos'), // Add this for AdminDashboard
     getPriceHistory: (symbol, interval) => apiRequest(`/market/${symbol}/history?interval=${interval}`), // Add this for AdminDashboard
     getNotifications: () => apiRequest('/market/notifications'), // Add this for both dashboards
+    getWalletInfo: () => apiRequest('/wallet/info'), // Add this for UserDashboard
 };
 
 // Transaction API
@@ -235,8 +296,8 @@ export const transactionAPI = {
 // Price History API
 export const priceHistoryAPI = {
     getAll: () => apiRequest('/price-history'),
-    getBySymbol: (symbol, period = '24h') => apiRequest(`/price-history/${symbol}?period=${period}`),
-    getChartData: (symbol, period = '7d') => apiRequest(`/price-history/${symbol}/chart?period=${period}`),
+    getBySymbol: (symbol, period = '30d') => apiRequest(`/price-history/${symbol}`),
+    getChartData: (symbol, period = '7d') => apiRequest(`/price-history/${symbol}?period=${period}`),
 };
 
 // Admin API
@@ -337,13 +398,21 @@ export const authUtils = {
         const token = getAuthToken();
         if (!token) return false;
 
-        // Basic token validation (you might want to add JWT expiration check)
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.exp > Date.now() / 1000;
-        } catch {
-            return false;
+        // Basic token validation:
+        // - If the token looks like a JWT (three parts separated by '.'), try to validate `exp`.
+        // - Otherwise (e.g. Laravel Sanctum plain-text personal access tokens), assume token presence means authenticated.
+        const parts = token.split('.');
+        if (parts.length === 3) {
+            try {
+                const payload = JSON.parse(atob(parts[1]));
+                return payload.exp > Date.now() / 1000;
+            } catch {
+                return false;
+            }
         }
+
+        // Non-JWT tokens (Sanctum personal access tokens) — assume valid presence
+        return true;
     },
 
     getCurrentUser: async () => {

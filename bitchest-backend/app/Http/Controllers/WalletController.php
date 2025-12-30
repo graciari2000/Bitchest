@@ -81,6 +81,63 @@ class WalletController extends Controller
     }
 
     /**
+     * Get wallet info for dashboard (portfolio summary)
+     */
+    public function info(Request $request)
+    {
+        $user = $request->user();
+
+        // Get all wallet entries for the user
+        $wallets = Wallet::where('user_id', $user->id)->get();
+
+        $totalValue = 0;
+        $previousTotalValue = 0;
+        $holdings = [];
+
+        // Calculate portfolio value and holdings
+        foreach ($wallets as $wallet) {
+            $crypto = Crypto::where('symbol', $wallet->crypto_symbol)->first();
+            if ($crypto) {
+                // Update wallet with current price
+                $wallet->current_price = $crypto->current_price;
+                $wallet->total_value = $wallet->amount * $crypto->current_price;
+                $wallet->profit_loss = $wallet->total_value - ($wallet->amount * $wallet->average_purchase_price);
+                $wallet->profit_loss_percentage = $wallet->average_purchase_price > 0
+                    ? (($wallet->profit_loss / ($wallet->amount * $wallet->average_purchase_price)) * 100)
+                    : 0;
+                $wallet->save();
+
+                $totalValue += $wallet->total_value;
+                
+                // Calculate previous value (assuming 24h price change)
+                $previousPrice = $crypto->current_price - ($crypto->price_change_24h ?? 0);
+                $previousTotalValue += $wallet->amount * $previousPrice;
+
+                // Add to holdings
+                $holdings[] = [
+                    'symbol' => $wallet->crypto_symbol,
+                    'name' => $wallet->crypto_name,
+                    'amount' => (float) $wallet->amount,
+                    'value' => (float) $wallet->total_value,
+                    'change' => (float) ($crypto->price_change_percentage_24h ?? 0),
+                ];
+            }
+        }
+
+        // Calculate daily change percentage
+        $dailyChange = $previousTotalValue > 0 
+            ? (($totalValue - $previousTotalValue) / $previousTotalValue) * 100 
+            : 0;
+
+        return response()->json([
+            'total_value' => (float) $totalValue,
+            'daily_change' => (float) $dailyChange,
+            'available_balance' => (float) $user->balance,
+            'holdings' => $holdings,
+        ]);
+    }
+
+    /**
      * Sell cryptocurrency
      */
     public function sell(Request $request)
@@ -149,6 +206,36 @@ class WalletController extends Controller
             'transaction' => $transaction,
             'new_balance' => $user->balance,
         ], 201);
+    }
+
+    /**
+     * Get recent transactions for the user's wallet
+     */
+    public function recentTransactions(Request $request)
+    {
+        $user = $request->user();
+        $limit = $request->get('limit', 10);
+
+        $transactions = Transaction::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function ($transaction) {
+                // Calculate fee (assuming 0.5% transaction fee)
+                $fee = $transaction->total * 0.005;
+                
+                return [
+                    'id' => $transaction->id,
+                    'type' => $transaction->type,
+                    'symbol' => $transaction->crypto_symbol,
+                    'amount' => (float) $transaction->amount,
+                    'value' => (float) $transaction->total,
+                    'fee' => (float) $fee,
+                    'date' => $transaction->created_at->toISOString(),
+                ];
+            });
+
+        return response()->json($transactions);
     }
 }
 
